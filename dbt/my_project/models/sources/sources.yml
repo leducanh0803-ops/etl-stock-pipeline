@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: dev
+    database: db
+    schema: dev
+    tables:
+      - name: raw_ohlcv_data
+        columns:
+          - name: ticker
+          - name: volume
+          - name: vw_price
+          - name: open_price
+          - name: close_price
+          - name: high_price
+          - name: ts
+          - name: no_txn
+          - name: inserted_at

@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# PostgreSQL data
+postgres/data/
+
+# dbt artifacts
+dbt/target/
+dbt/logs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+postgres/data

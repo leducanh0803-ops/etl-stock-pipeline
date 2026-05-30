@@ -1,0 +1,43 @@
+services:
+  db:
+    container_name: postgres_container
+    image: postgres:14.23
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_password
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+    networks:
+      - my-network
+    
+  loader:
+    container_name: loader_container
+    build:
+      context: ./api-request
+    volumes:
+      - ./docker-compose.yaml:/app/docker-compose.yaml
+    networks:
+      - my-network
+    depends_on:
+      - db
+
+  dbt:
+    container_name: dbt_container
+    build:
+      context: ./dbt
+    volumes:
+      - ./dbt/my_project:/usr/app
+
+    working_dir: /usr/app
+    depends_on:
+      - db
+    networks:
+      - my-network
+    command: run
+
+networks:
+  my-network:
+    driver: bridge
