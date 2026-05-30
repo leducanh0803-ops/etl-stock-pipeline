@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 import yaml
 
 from sqlalchemy import create_engine, text
@@ -14,20 +15,16 @@ def get_config():
 
 
 def create_engine_conn():
-
     print("Creating SQLAlchemy engine ...")
-
-    cfg = get_config()['services']['db']['environment']
-
-    user = cfg['POSTGRES_USER']
-    password = cfg['POSTGRES_PASSWORD']
-    db = cfg['POSTGRES_DB']
-    host = get_config()['services']['db']['container_name']
-
+    
+    user = os.environ.get("DB_USER", "db_user")
+    password = os.environ.get("DB_PASSWORD", "db_password")
+    db = os.environ.get("DB_NAME", "db")
+    host = os.environ.get("DB_HOST", "postgres_container")
+    
     engine = create_engine(
         f"postgresql+psycopg2://{user}:{password}@{host}:5432/{db}"
     )
-
     return engine
 
 
