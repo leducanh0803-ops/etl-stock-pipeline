@@ -23,7 +23,20 @@ services:
       - my-network
     depends_on:
       - db
-
+  
+  af:
+    container_name: airflow_container
+    image: apache/airflow:3.0.0
+    ports:
+      - 8000:8000
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgreslq+psycopg2://airflow:airflow@db:5432/airflow_db
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+    depends_on:
+      - db
+  networks:
+    - my-network
   dbt:
     container_name: dbt_container
     build:
