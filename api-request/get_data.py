@@ -25,11 +25,15 @@ def request_data(url,key,ticker,multiplier,timespan,start='2025-05-06',end='2026
     else:
         data = response.json()['results']
         return data
+    
 def mock_data():
-    with open('./example_data.txt','r') as f:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, 'example_data.txt')
+    
+    with open(file_path, 'r') as f:
         data = json.load(f)
         data = pd.DataFrame(data)
-        col =['ticker'] + data.columns.to_list()  
+        col = ['ticker'] + data.columns.to_list()
         data['ticker'] = 'AAPL'
         data = data[col]
         return data

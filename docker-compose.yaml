@@ -27,14 +27,12 @@ services:
       DB_PASSWORD: db_password
       DB_NAME: db
       DB_HOST: postgres_container
-    volumes:
-      - ./docker-compose.yaml:/app/docker-compose.yaml
     networks:
       - my-network
     depends_on:
       db:
         condition: service_healthy
-  
+
   af:
     container_name: airflow_container
     image: apache/airflow:3.0.0
@@ -42,15 +40,20 @@ services:
       - 8080:8080
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@db:5432/airflow_db
+    group_add:
+      - '1001'
     volumes:
       - ./airflow/dags:/opt/airflow/dags
+      - ./api-request:/opt/airflow/api-request
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       db: 
         condition: service_healthy
     networks:
       - my-network
     command: >
-      bash -c "airflow db migrate && airflow standalone"
+        bash -c "airflow db migrate && 
+        airflow standalone"
     
   dbt:
     container_name: dbt_container
@@ -58,11 +61,12 @@ services:
       context: ./dbt
     volumes:
       - ./dbt/my_project:/usr/app
-
     working_dir: /usr/app
     depends_on:
       db:
         condition: service_healthy
+      loader:
+        condition: service_completed_successfully
     networks:
       - my-network
     command: run

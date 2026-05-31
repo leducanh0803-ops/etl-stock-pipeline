@@ -32,7 +32,7 @@ def create_table(engine):
 
     print("Checking/Creating table ...")
 
-    with engine.connect() as conn:
+    with engine.begin() as conn:
 
         conn.execute(text("""
             CREATE SCHEMA IF NOT EXISTS dev;
@@ -52,8 +52,6 @@ def create_table(engine):
                 inserted_at TIMESTAMP DEFAULT NOW()
             );
         """))
-
-        conn.commit()
 
         print("Table ready")
 
@@ -97,11 +95,11 @@ def insert_records(engine, data):
 
     print("Records inserted successfully")
 
+def main():
+    engine = create_engine_conn()
+    create_table(engine)
+    data = mock_data()
+    insert_records(engine, data)
 
-engine = create_engine_conn()
-
-create_table(engine)
-
-data = mock_data()
-
-insert_records(engine, data)
+if __name__ == '__main__':
+    main()
