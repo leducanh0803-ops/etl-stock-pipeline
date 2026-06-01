@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["python","insert_records.py"]
+CMD ["python","pipeline.py"]
