@@ -1,18 +1,15 @@
-import yfinance as yf
-import polars as pl
-import requests
 import pandas as pd
-from datetime import datetime
+import requests
+from datetime import datetime,date
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
 
-
 def get_sp500_tickers():
+    """Fetch S&P 500 tickers from the official dataset, replacing dots with dashes."""
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
-
     df = pd.read_csv(url)
-
     tickers = (
         df["Symbol"]
         .str.replace(".", "-", regex=False)
@@ -20,24 +17,39 @@ def get_sp500_tickers():
     )
     return tickers
 
+
 class MassiveDailyExtractor:
+    """Extracts daily OHLCV and company overview data from Polygon.io."""
+
     def __init__(self):
         self.api_key = os.getenv("API_KEY_MASSIVE")
         self.base_url = os.getenv("API_URL")
 
     def is_market_day(self):
-        # Mon–Fri only (simple version)
+        """Simple market day check: returns True on Monday-Friday."""
         return datetime.now().weekday() < 5
-
+    
+    def upsert_ohlcv(self,ticker):
+        """Get 2-year OHLCV data for a ticker"""
+        today = date.today()
+        start = today.replace(year=today.year-2)
+        url= f"{self.base_url}/v2/aggs/ticker/{ticker}/range/1/day/{start}/{today}"
+        
+        r = requests.get(url,params={"apiKey": self.api_key})
+        r.raise_for_status()
+        data = pd.DataFrame(r.json()['results'])
+        data['t'] = pd.to_datetime(data['t'],unit='ms',utc=True)
+        return data
+        
     def get_ohlcv_prev(self, ticker):
+        """Get previous day's OHLCV data for a ticker."""
         url = f"{self.base_url}/v2/aggs/ticker/{ticker}/prev"
-
         r = requests.get(url, params={"apiKey": self.api_key})
         r.raise_for_status()
         return r.json()["results"]
-    
-    
-    def _normalize_ticker_details(self,data: dict) -> pl.DataFrame:
+
+    def _normalize_ticker_details(self, data: dict) -> pd.DataFrame:
+        """Flatten address and branding fields into a single-row DataFrame."""
         record = data.copy()
 
         address = record.pop("address", {})
@@ -52,37 +64,11 @@ class MassiveDailyExtractor:
             "icon_url": branding.get("icon_url"),
         })
 
-        return pl.DataFrame([record])
+        return pd.DataFrame([record])
 
     def get_overview(self, ticker):
+        """Fetch company overview (ticker details) from Polygon.io."""
         url = f"{self.base_url}/v3/reference/tickers/{ticker}"
-
         r = requests.get(url, params={"apiKey": self.api_key})
         r.raise_for_status()
         return self._normalize_ticker_details(r.json()["results"])
-
-
-class YFinanceFundamentalExtractor:
-    def __init__(self, ticker):
-        self.ticker = ticker
-        self.client = yf.Ticker(ticker)
-
-    def _clean(self, df):
-        df = df.T.reset_index().rename(columns={"index": "report_date"})
-        df["ticker"] = self.ticker
-        return pl.from_pandas(df)
-
-    def get_ohlcv(self,):
-        df = yf.download(self.ticker, period="max", interval="1d", progress=False)
-        df = df.reset_index()
-        df["ticker"] = self.ticker
-        return pl.from_pandas(df)
-
-    def get_income_statement(self):
-        return self._clean(self.client.income_stmt)
-
-    def get_balance_sheet(self):
-        return self._clean(self.client.balance_sheet)
-
-    def get_cashflow(self):
-        return self._clean(self.client.cash_flow)

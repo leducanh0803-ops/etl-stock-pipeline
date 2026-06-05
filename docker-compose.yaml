@@ -22,6 +22,10 @@ services:
     container_name: loader_container
     build:
       context: ./api-request
+    volumes:
+      - ./api-request:/app
+    env_file:
+     - ./api-request/.env
     environment:
       DB_USER: db_user
       DB_PASSWORD: db_password

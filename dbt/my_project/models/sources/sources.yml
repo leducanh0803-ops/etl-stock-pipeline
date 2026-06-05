@@ -5,14 +5,13 @@ sources:
     database: db
     schema: dev
     tables:
-      - name: raw_ohlcv_data
+      - name: ohlcv
         columns:
-          - name: ticker
+          - name: date
+          - name: open
+          - name: high
+          - name: low
+          - name: close
           - name: volume
-          - name: vw_price
-          - name: open_price
-          - name: close_price
-          - name: high_price
-          - name: ts
-          - name: no_txn
+          - name: weighted_volume
           - name: inserted_at
