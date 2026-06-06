@@ -56,7 +56,7 @@ class DataPipeline:
 
 def main():
     data_pipeline = DataPipeline()
-    #data_pipeline.run()
+    data_pipeline.run()
    
     print("I'm the pipeline")
     print("Working...................")
