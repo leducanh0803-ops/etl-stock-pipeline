@@ -13,8 +13,9 @@ class DataPipeline:
         self.schema = os.getenv('DB_SCHEMA')
 
     def run(self):
-        stocks = get_sp500_tickers()
-        
+        stocks =["MMM", "AOS", "ABT", "ABBV", "ACN", "ADBE", "AMD", "AES", "AFL", 
+                "A", "APD", "ABNB", "AKAM", "ALB", "ARE", "ALGN", "ALLE"]           ### Prevent the api limit time out error
+    
         self.storage._create_loaded_table()
         for ticker in stocks:
             time.sleep(30)
@@ -55,9 +56,10 @@ class DataPipeline:
 
 def main():
     data_pipeline = DataPipeline()
-    while True:
-        data_pipeline.run()
-        time.sleep(20)
+    #data_pipeline.run()
+   
+    print("I'm the pipeline")
+    print("Working...................")
 
 if __name__ == "__main__":
     main()
